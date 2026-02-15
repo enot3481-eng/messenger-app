@@ -13,6 +13,8 @@ export const Dashboard: React.FC = () => {
   const [editBio, setEditBio] = useState('');
 
   const [userResults, setUserResults] = useState<User[]>([]);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showUserProfile, setShowUserProfile] = useState(false);
 
   // Filter chats by name or participant tag
   const filteredChats = useMemo(() => {
@@ -122,8 +124,8 @@ export const Dashboard: React.FC = () => {
                 <h3>Пользователи</h3>
                 {userResults.map((user: User) => (
                   <div key={user.id} className="user-result-item chat-item" onClick={() => {
-                    // Here we could create a new chat with the found user
-                    console.log('Selected user:', user);
+                    setSelectedUser(user);
+                    setShowUserProfile(true);
                   }}>
                     <div className="chat-title">{user.nickname}</div>
                     <div className="chat-last">{user.tag}</div>
@@ -170,6 +172,38 @@ export const Dashboard: React.FC = () => {
             <div className="popup-actions">
               <button className="btn" onClick={saveProfile}>Сохранить</button>
               <button className="btn btn-ghost" onClick={() => setShowProfile(false)}>Отмена</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* User Profile Modal */}
+      {showUserProfile && selectedUser && (
+        <div className="profile-overlay" onClick={() => setShowUserProfile(false)}>
+          <div className="profile-popup" onClick={(e) => e.stopPropagation()}>
+            <div className="user-profile-view">
+              <div className="user-avatar-large">
+                {selectedUser.avatar ? (
+                  <img src={selectedUser.avatar} alt={selectedUser.nickname} />
+                ) : (
+                  <div className="avatar-placeholder-large">{selectedUser.nickname?.charAt(0).toUpperCase()}</div>
+                )}
+              </div>
+              
+              <h2>{selectedUser.nickname}</h2>
+              
+              <div className="user-profile-actions">
+                <button className="action-btn message-btn">💬</button>
+                <button className="action-btn call-btn">📞</button>
+                <button className="action-btn video-call-btn">📹</button>
+              </div>
+              
+              <div className="user-profile-details">
+                <p><strong>Тег:</strong> {selectedUser.tag}</p>
+                <p><strong>Описание:</strong> {selectedUser.bio || 'Нет описания'}</p>
+              </div>
+              
+              <button className="close-profile-btn" onClick={() => setShowUserProfile(false)}>Закрыть</button>
             </div>
           </div>
         </div>
