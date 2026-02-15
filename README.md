@@ -59,7 +59,12 @@ Vercel не поддерживает WebSocket-соединения напрям
 
 1. Зайдите на сайт vercel.com и создайте новую команду
 2. Импортируйте этот репозиторий GitHub
-3. В настройках проекта добавьте переменную окружения:
+3. В настройках проекта укажите:
+   - Framework Preset: `Create React App` или `Other`
+   - Root Directory: `frontend`
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+4. В настройках проекта добавьте переменную окружения:
    - Key: `VITE_WS_SERVER_URL`
    - Value: URL вашего WebSocket сервера (например, wss://my-messenger-backend.onrender.com)
 
