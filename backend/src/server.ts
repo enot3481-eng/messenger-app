@@ -33,6 +33,7 @@ wss.on('connection', (ws: WebSocket) => {
         // Store user info if provided
         if (message.userInfo) {
           users.set(userId, message.userInfo);
+          console.log(`Сохранен пользователь ${userId}:`, message.userInfo);
         }
         
         console.log(`Пользователь ${userId} онлайн`);
@@ -82,8 +83,11 @@ wss.on('connection', (ws: WebSocket) => {
 // API endpoint to get user by tag
 app.get('/api/users/tag/:tag', (req, res) => {
   const tag = req.params.tag.toLowerCase();
+  console.log(`Поиск пользователя по тегу: ${tag}`);
+  console.log(`Всего пользователей в памяти: ${users.size}`);
+  
   const matchingUsers = Array.from(users.entries())
-    .filter(([id, userInfo]) => 
+    .filter(([id, userInfo]) =>
       userInfo.tag && userInfo.tag.toLowerCase() === tag
     )
     .map(([id, userInfo]) => ({
@@ -91,14 +95,18 @@ app.get('/api/users/tag/:tag', (req, res) => {
       ...userInfo
     }));
 
+  console.log(`Найдено пользователей по тегу: ${matchingUsers.length}`);
   res.json(matchingUsers);
 });
 
 // API endpoint to search users by tag
 app.get('/api/users/search/:query', (req, res) => {
   const query = req.params.query.toLowerCase();
+  console.log(`Поиск пользователей по запросу: ${query}`);
+  console.log(`Всего пользователей в памяти: ${users.size}`);
+  
   const matchingUsers = Array.from(users.entries())
-    .filter(([id, userInfo]) => 
+    .filter(([id, userInfo]) =>
       userInfo.tag && userInfo.tag.toLowerCase().includes(query)
     )
     .map(([id, userInfo]) => ({
@@ -106,6 +114,7 @@ app.get('/api/users/search/:query', (req, res) => {
       ...userInfo
     }));
 
+  console.log(`Найдено пользователей: ${matchingUsers.length}`);
   res.json(matchingUsers);
 });
 

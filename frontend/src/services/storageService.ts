@@ -158,9 +158,15 @@ export const searchUsersByTag = async (tagQuery: string): Promise<User[]> => {
       apiUrl = wsServerUrl.replace('wss://', 'https://');
     }
     
+    console.log('Поиск пользователей на сервере:', `${apiUrl}/api/users/search/${normalizedQuery}`);
+    
     const response = await fetch(`${apiUrl}/api/users/search/${normalizedQuery}`);
+    console.log('Ответ от сервера:', response.status);
+    
     if (response.ok) {
       const serverUsers = await response.json();
+      console.log('Найденные пользователи на сервере:', serverUsers);
+      
       // Combine all results, removing duplicates
       const allMatches = [...localAndIndexedMatches];
       for (const serverUser of serverUsers) {
@@ -179,13 +185,17 @@ export const searchUsersByTag = async (tagQuery: string): Promise<User[]> => {
           allMatches.push(user);
         }
       }
+      console.log('Все найденные пользователи (локальные + сервер):', allMatches);
       return allMatches;
+    } else {
+      console.error('Ошибка при поиске пользователей на сервере:', response.status, response.statusText);
     }
   } catch (error) {
     console.error('Error searching users on server:', error);
     // Return local and IndexedDB results if server search fails
   }
 
+  console.log('Возвращаем только локальные результаты:', localAndIndexedMatches);
   return localAndIndexedMatches;
 };
 
