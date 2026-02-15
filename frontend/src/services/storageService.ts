@@ -447,8 +447,18 @@ export const getUserByTagLocal = (tag: string): User | undefined => {
 };
 
 export const getCurrentUser = (): User | null => {
-  // Try to get from localStorage first
-  const stored = localStorage.getItem('currentUser');
+  // Try to get from sessionStorage first (most recent)
+  let stored = sessionStorage.getItem('currentUser');
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      console.error('Error parsing currentUser from sessionStorage:', e);
+    }
+  }
+  
+  // Then try localStorage
+  stored = localStorage.getItem('currentUser');
   if (stored) {
     try {
       return JSON.parse(stored);
@@ -456,14 +466,32 @@ export const getCurrentUser = (): User | null => {
       console.error('Error parsing currentUser from localStorage:', e);
     }
   }
+  
   // Fallback to getLocalData
-  return getLocalData('currentUser');
+  const localData = getLocalData('currentUser');
+  if (localData) {
+    // Update sessionStorage and localStorage with the fallback data
+    try {
+      sessionStorage.setItem('currentUser', JSON.stringify(localData));
+      localStorage.setItem('currentUser', JSON.stringify(localData));
+    } catch (e) {
+      console.error('Error updating storage with fallback data:', e);
+    }
+  }
+  
+  return localData;
 };
 
 export const setCurrentUser = (user: User): void => {
-  setLocalData('currentUser', user);
-  // Also save to localStorage for cross-session persistence
-  localStorage.setItem('currentUser', JSON.stringify(user));
+  try {
+    setLocalData('currentUser', user);
+    // Also save to localStorage for cross-session persistence
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    // Additionally save to sessionStorage for tab/session persistence
+    sessionStorage.setItem('currentUser', JSON.stringify(user));
+  } catch (error) {
+    console.error('Error saving currentUser:', error);
+  }
 };
 
 export const clearAllData = async (): Promise<void> => {

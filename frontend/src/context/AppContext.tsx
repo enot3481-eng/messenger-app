@@ -32,7 +32,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const initApp = async () => {
       try {
         await initDatabase();
-        const user = getCurrentUser();
+        let user = getCurrentUser();
+        
+        // If no user in storage, try to get from localStorage as fallback
+        if (!user) {
+          const storedUserStr = localStorage.getItem('currentUser');
+          if (storedUserStr) {
+            try {
+              const parsedUser = JSON.parse(storedUserStr);
+              if (parsedUser && typeof parsedUser === 'object') {
+                user = parsedUser;
+                // Restore user to proper storage
+                if (user) {
+                  setCurrentUser(user);
+                }
+              }
+            } catch (parseErr) {
+              console.error('Error parsing stored user:', parseErr);
+            }
+          }
+        }
+        
         if (user) {
           setCurrentUserLocal(user);
           
@@ -60,6 +80,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     initApp();
+    
+    // Clean up WebSocket connection on unmount
+    return () => {
+      websocketService.disconnect();
+    };
   }, []);
 
   useEffect(() => {
