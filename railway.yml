@@ -1,0 +1,23 @@
+# Railway Configuration File
+# Docs: https://docs.railway.app/configuration/configuration-file
+
+# Service configuration
+services:
+  - name: messenger-backend
+    build:
+      builder: "NIXPACKS"
+      nixpacksPlan:
+        phases:
+          setup:
+            nixPkgs: ['nodejs', 'npm']
+          install:
+            cmd: |
+              cd backend && npm ci
+          build:
+            cmd: |
+              cd backend && npm run build
+        start:
+          cmd: |
+            cd backend && npm start
+    env:
+      - NODE_ENV=production

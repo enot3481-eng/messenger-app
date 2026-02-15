@@ -110,7 +110,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-const PORT = process.env.PORT || 8080;
+const PORT = parseInt(process.env.PORT || '8080');
 server.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });
