@@ -146,7 +146,19 @@ export const searchUsersByTag = async (tagQuery: string): Promise<User[]> => {
 
   // Search on server if available
   try {
-    const response = await fetch(`${import.meta.env.VITE_WS_SERVER_URL}/api/users/search/${normalizedQuery}`);
+    // Construct the API URL from the WebSocket URL
+    // Get the WebSocket server URL from environment
+    const wsServerUrl = import.meta.env.VITE_WS_SERVER_URL || 'http://localhost:8080';
+    
+    // Convert WebSocket URL to HTTP URL for API calls
+    let apiUrl = wsServerUrl;
+    if (wsServerUrl.startsWith('ws://')) {
+      apiUrl = wsServerUrl.replace('ws://', 'http://');
+    } else if (wsServerUrl.startsWith('wss://')) {
+      apiUrl = wsServerUrl.replace('wss://', 'https://');
+    }
+    
+    const response = await fetch(`${apiUrl}/api/users/search/${normalizedQuery}`);
     if (response.ok) {
       const serverUsers = await response.json();
       // Combine all results, removing duplicates
