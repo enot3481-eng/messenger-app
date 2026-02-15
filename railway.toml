@@ -1,0 +1,9 @@
+# Railway Configuration
+# This file contains configuration for Railway deployment
+
+[build]
+builder = "nixpacks"
+
+[nixpacks]
+phases = { setup = { nixPkgs = ["nodejs", "npm"] }, install = { cmd = "cd backend && npm install" }, build = { cmd = "cd backend && npm run build" } }
+start_cmd = "cd backend && npm start"

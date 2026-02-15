@@ -73,13 +73,14 @@ Vercel не поддерживает WebSocket-соединения напрям
 1. Зайдите на сайт railway.app и создайте аккаунт
 2. Нажмите "New Project" → "Deploy from GitHub repo"
 3. Выберите ваш репозиторий
-4. В настройках проекта убедитесь, что:
-   - Build Command: `cd backend && npm install && cd backend && npm run build`
-   - Start Command: `cd backend && npm start`
-   - Working Directory: `/`
-5. Railway автоматически задаст переменную PORT
-6. После деплоя получите Public Domain URL (например, `https://my-messenger-backend-production.up.railway.app`)
-7. Используйте этот URL в настройках Vercel
+4. Railway автоматически обнаружит, что это Node.js проект, и выполнит сборку
+5. В настройках проекта убедитесь, что:
+   - Build Command: `cd backend && npm install && npm run build`
+   - Start Command: `npm start`
+   - Working Directory: `backend`
+6. Railway автоматически задаст переменную PORT
+7. После деплоя получите Public Domain URL (например, `https://my-messenger-backend-production.up.railway.app`)
+8. Используйте этот URL в настройках Vercel как значение переменной `VITE_WS_SERVER_URL`
 
 ### Автоматическая сборка
 
