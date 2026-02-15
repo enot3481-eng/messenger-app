@@ -1,21 +1,32 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { UserSearch } from '../components/UserSearch';
+import { User } from '../types';
+import { getUserByTag, searchUsersByTag } from '../services/storageService';
 import '../styles/Dashboard.css';
 
 export const Dashboard: React.FC = () => {
-  const { currentUser, chats, selectChat, selectedChat, setCurrentUserData } = useApp() as any;
+  const { currentUser, chats, selectChat, selectedChat, setCurrentUserData, loadChats } = useApp() as any;
   const [search, setSearch] = useState('');
   const [showProfile, setShowProfile] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(undefined);
   const [editTag, setEditTag] = useState('');
   const [editBio, setEditBio] = useState('');
-  const [showUserSearch, setShowUserSearch] = useState(false);
 
-  // filter chats by name or participant tag
+  const [userResults, setUserResults] = useState<User[]>([]);
+
+  // Filter chats by name or participant tag
   const filteredChats = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return chats || [];
+    
+    if (q.startsWith('@')) {
+      // If searching by tag, return empty chat list
+      return [];
+    }
+    
+    if (!q) {
+      return chats || [];
+    }
+    
     return (chats || []).filter((c: any) => {
       const title = c.groupName || (c.participantDetails && c.participantDetails.map((p: any) => p.nickname).join(' ')) || '';
       const tags = (c.participantDetails || []).map((p: any) => p.tag).join(' ');
@@ -23,11 +34,30 @@ export const Dashboard: React.FC = () => {
     });
   }, [chats, search]);
 
-  const handleUserSelect = (user: any) => {
-    // Здесь можно создать новый чат с выбранным пользователем
-    console.log('Selected user:', user);
-    setShowUserSearch(false);
-  };
+  // Effect to search users by tag
+  useEffect(() => {
+    const q = search.trim().toLowerCase();
+    
+    if (q.startsWith('@')) {
+      const tagQuery = q.substring(1); // Remove @ symbol
+      if (tagQuery) {
+        searchUsersByTag(tagQuery)
+          .then(foundUsers => {
+            const filteredUsers = foundUsers.filter(user => user.id !== currentUser?.id);
+            setUserResults(filteredUsers);
+          })
+          .catch(error => {
+            console.error('Error searching users by tag:', error);
+            setUserResults([]);
+          });
+      } else {
+        setUserResults([]);
+      }
+    } else {
+      // Clear user results when not searching by tag
+      setUserResults([]);
+    }
+  }, [search, currentUser]);
 
   const openProfile = () => {
     setEditTag(currentUser?.tag || '');
@@ -75,32 +105,34 @@ export const Dashboard: React.FC = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <button 
-              className={`user-search-toggle ${showUserSearch ? 'active' : ''}`} 
-              onClick={() => setShowUserSearch(!showUserSearch)}
-            >
-              {showUserSearch ? '×' : '🔍'}
-            </button>
           </div>
 
-          {showUserSearch ? (
-            <div className="user-search-section">
-              <UserSearch onSelectUser={handleUserSelect} />
-            </div>
-          ) : (
-            <div className="chat-list">
-              {filteredChats.length === 0 ? (
-                <div className="empty-chats">Новых чатов нет</div>
-              ) : (
-                filteredChats.map((chat: any) => (
-                  <div key={chat.id} className="chat-item" onClick={() => selectChat(chat.id)}>
-                    <div className="chat-title">{chat.groupName || chat.participantDetails?.map((p: any) => p.nickname).join(', ')}</div>
-                    <div className="chat-last">{chat.lastMessage?.content || ''}</div>
+          <div className="chat-list">
+            {/* Display user search results if searching by tag */}
+            {search.trim().toLowerCase().startsWith('@') && userResults.length > 0 ? (
+              <div className="user-search-results">
+                <h3>Пользователи</h3>
+                {userResults.map((user: User) => (
+                  <div key={user.id} className="user-result-item chat-item" onClick={() => {
+                    // Here we could create a new chat with the found user
+                    console.log('Selected user:', user);
+                  }}>
+                    <div className="chat-title">{user.nickname}</div>
+                    <div className="chat-last">{user.tag}</div>
                   </div>
-                ))
-              )}
-            </div>
-          )}
+                ))}
+              </div>
+            ) : filteredChats.length === 0 ? (
+              <div className="empty-chats">Новых чатов нет</div>
+            ) : (
+              filteredChats.map((chat: any) => (
+                <div key={chat.id} className="chat-item" onClick={() => selectChat(chat.id)}>
+                  <div className="chat-title">{chat.groupName || chat.participantDetails?.map((p: any) => p.nickname).join(', ')}</div>
+                  <div className="chat-last">{chat.lastMessage?.content || ''}</div>
+                </div>
+              ))
+            )}
+          </div>
         </aside>
 
         <div className="dashboard-main">

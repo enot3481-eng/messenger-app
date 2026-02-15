@@ -99,6 +99,29 @@
   padding-top: 8px;
 }
 
+.user-search-results {
+  margin-bottom: 12px;
+}
+
+.user-search-results h3 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #666;
+  font-weight: 600;
+}
+
+.user-result-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: #f8f9ff;
+  border-left: 3px solid #667eea;
+}
+
+.user-result-item:hover {
+  background-color: #eef1ff;
+}
+
 .empty-chats {
   color: #777;
   padding: 20px;

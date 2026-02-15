@@ -80,20 +80,64 @@ export const getUser = async (id: string): Promise<User | undefined> => {
 
 export const getUserByTag = async (tag: string): Promise<User | undefined> => {
   const normalizedTag = tag.toLowerCase();
-  
+
   // Try localStorage first (works across ports)
   const user = getUserByTagLocal(normalizedTag);
   if (user) return user;
-  
+
   // Fallback to IndexedDB
   if (!db) throw new Error('База данных не инициализирована');
-  
+
   const tx = db.transaction('users', 'readonly');
   const index = tx.objectStore('users').index('tag');
-  
+
   return new Promise((resolve, reject) => {
     const request = index.get(normalizedTag);
     request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+};
+
+// New function to search users by partial tag match
+export const searchUsersByTag = async (tagQuery: string): Promise<User[]> => {
+  const normalizedQuery = tagQuery.toLowerCase();
+  
+  // Search in localStorage first
+  const localUsers = getAllUsersLocal();
+  const localMatches = localUsers.filter(user => 
+    user.tag.toLowerCase().includes(normalizedQuery)
+  );
+
+  // Search in IndexedDB
+  if (!db) throw new Error('База данных не инициализирована');
+
+  const tx = db.transaction('users', 'readonly');
+  const store = tx.objectStore('users');
+
+  return new Promise((resolve, reject) => {
+    const allUsers: User[] = [];
+    const request = store.openCursor();
+
+    request.onsuccess = (event) => {
+      const cursor = (event.target as IDBRequest).result;
+      if (cursor) {
+        const user = cursor.value as User;
+        if (user.tag.toLowerCase().includes(normalizedQuery)) {
+          allUsers.push(user);
+        }
+        cursor.continue();
+      } else {
+        // Combine local and indexedDB results, removing duplicates
+        const allMatches = [...localMatches];
+        for (const indexedUser of allUsers) {
+          if (!allMatches.some(u => u.id === indexedUser.id)) {
+            allMatches.push(indexedUser);
+          }
+        }
+        resolve(allMatches);
+      }
+    };
+
     request.onerror = () => reject(request.error);
   });
 };
