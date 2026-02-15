@@ -1,7 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { User } from '../types';
-import { getUserByTag, searchUsersByTag, saveUser } from '../services/storageService';
+import { User, Chat } from '../types';
+import { getUserByTag, searchUsersByTag, saveUser, saveChat } from '../services/storageService';
+import { generateId } from '../services/encryptionService';
+import { ChatWindow } from '../components/ChatWindow';
 import '../styles/Dashboard.css';
 
 export const Dashboard: React.FC = () => {
@@ -93,6 +95,41 @@ export const Dashboard: React.FC = () => {
     setShowProfile(false);
   };
 
+  const openChatWithUser = async (user: User) => {
+    // Find existing chat with this user
+    const existingChat = chats.find((chat: Chat) => 
+      chat.participantIds.includes(user.id) && chat.participantIds.includes(currentUser?.id || '')
+    );
+
+    if (existingChat) {
+      // Select existing chat
+      await selectChat(existingChat.id);
+    } else {
+      // Create new chat
+      const newChatId = generateId();
+      const newChat: Chat = {
+        id: newChatId,
+        participantIds: [currentUser?.id || '', user.id],
+        participantDetails: [currentUser!, user],
+        messages: [],
+        createdAt: new Date(),
+        isGroup: false,
+        unreadCount: 0
+      };
+
+      // Save new chat to storage
+      try {
+        await saveChat(newChat);
+        // Reload chats to include the new one
+        await loadChats();
+        // Select the new chat
+        await selectChat(newChatId);
+      } catch (error) {
+        console.error('Error creating new chat:', error);
+      }
+    }
+  };
+
   return (
     <div className="dashboard">
       <div className="dashboard-header">
@@ -146,9 +183,13 @@ export const Dashboard: React.FC = () => {
         </aside>
 
         <div className="dashboard-main">
-          <div className="no-chat-selected welcome">
-            <div className="welcome-bubble">Добро пожаловать, {currentUser?.nickname}! 👋</div>
-          </div>
+          {selectedChat ? (
+            <ChatWindow chatId={selectedChat.id} />
+          ) : (
+            <div className="no-chat-selected welcome">
+              <div className="welcome-bubble">Добро пожаловать, {currentUser?.nickname}! 👋</div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -193,7 +234,12 @@ export const Dashboard: React.FC = () => {
               <h2>{selectedUser.nickname}</h2>
               
               <div className="user-profile-actions">
-                <button className="action-btn message-btn">💬</button>
+                <button className="action-btn message-btn" onClick={() => {
+                  // Close profile modal
+                  setShowUserProfile(false);
+                  // Open chat with selected user
+                  openChatWithUser(selectedUser);
+                }}>💬</button>
                 <button className="action-btn call-btn">📞</button>
                 <button className="action-btn video-call-btn">📹</button>
               </div>
