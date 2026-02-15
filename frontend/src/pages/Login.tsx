@@ -12,6 +12,7 @@ import {
   generateId
 } from '../services/encryptionService';
 import { useApp } from '../context/AppContext';
+import { websocketService } from '../services/websocketService';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -68,6 +69,24 @@ export const Login: React.FC = () => {
 
       await saveUser(newUser);
       setCurrentUserData(newUser);
+      
+      // Connect to WebSocket server and send user info
+      try {
+        await websocketService.connect();
+        websocketService.userOnline(newUser.id, {
+          id: newUser.id,
+          email: newUser.email,
+          nickname: newUser.nickname,
+          tag: newUser.tag,
+          avatar: newUser.avatar,
+          bio: newUser.bio,
+          createdAt: newUser.createdAt,
+          publicKey: newUser.publicKey
+        });
+      } catch (wsErr) {
+        console.error('WebSocket connection error:', wsErr);
+      }
+      
       navigate('/dashboard');
     } catch (err) {
       console.error(err);
@@ -102,6 +121,24 @@ export const Login: React.FC = () => {
         return;
       }
       setCurrentUserData(user);
+      
+      // Connect to WebSocket server and send user info
+      try {
+        await websocketService.connect();
+        websocketService.userOnline(user.id, {
+          id: user.id,
+          email: user.email,
+          nickname: user.nickname,
+          tag: user.tag,
+          avatar: user.avatar,
+          bio: user.bio,
+          createdAt: user.createdAt,
+          publicKey: user.publicKey
+        });
+      } catch (wsErr) {
+        console.error('WebSocket connection error:', wsErr);
+      }
+      
       navigate('/dashboard');
     } catch (err) {
       console.error(err);

@@ -70,8 +70,24 @@ class WebSocketServiceImpl {
     this.emit('message', message);
   }
 
-  userOnline(userId: string): void {
-    this.emit('user_online', { userId, timestamp: Date.now() });
+  userOnline(userId: string, userInfo?: any): void {
+    this.emit('user_online', { 
+      userId, 
+      userInfo, // Send user info to server
+      timestamp: Date.now() 
+    });
+  }
+
+  searchUsers(query: string, callback: (users: any[]) => void): void {
+    // Listen for search results
+    this.on('search_results', (data: any) => {
+      if (data.users) {
+        callback(data.users);
+      }
+    });
+
+    // Send search request
+    this.emit('search_users', { query });
   }
 
   off(event: string, callback: Function): void {

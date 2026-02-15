@@ -98,7 +98,7 @@ export const getUserByTag = async (tag: string): Promise<User | undefined> => {
   });
 };
 
-// New function to search users by partial tag match
+// New function to search users by partial tag match - now includes server search
 export const searchUsersByTag = async (tagQuery: string): Promise<User[]> => {
   const normalizedQuery = tagQuery.toLowerCase();
   
@@ -106,37 +106,75 @@ export const searchUsersByTag = async (tagQuery: string): Promise<User[]> => {
   const localMatches = searchUsersByTagLocal(normalizedQuery);
 
   // Search in IndexedDB
-  if (!db) throw new Error('База данных не инициализирована');
+  let indexedDBMatches: User[] = [];
+  if (db) {
+    try {
+      const tx = db.transaction('users', 'readonly');
+      const store = tx.objectStore('users');
 
-  const tx = db.transaction('users', 'readonly');
-  const store = tx.objectStore('users');
+      indexedDBMatches = await new Promise((resolve, reject) => {
+        const allUsers: User[] = [];
+        const request = store.openCursor();
 
-  return new Promise((resolve, reject) => {
-    const allUsers: User[] = [];
-    const request = store.openCursor();
-
-    request.onsuccess = (event) => {
-      const cursor = (event.target as IDBRequest).result;
-      if (cursor) {
-        const user = cursor.value as User;
-        if (user.tag.toLowerCase().includes(normalizedQuery)) {
-          allUsers.push(user);
-        }
-        cursor.continue();
-      } else {
-        // Combine local and indexedDB results, removing duplicates
-        const allMatches = [...localMatches];
-        for (const indexedUser of allUsers) {
-          if (!allMatches.some(u => u.id === indexedUser.id)) {
-            allMatches.push(indexedUser);
+        request.onsuccess = (event) => {
+          const cursor = (event.target as IDBRequest).result;
+          if (cursor) {
+            const user = cursor.value as User;
+            if (user.tag.toLowerCase().includes(normalizedQuery)) {
+              allUsers.push(user);
+            }
+            cursor.continue();
+          } else {
+            resolve(allUsers);
           }
-        }
-        resolve(allMatches);
-      }
-    };
+        };
 
-    request.onerror = () => reject(request.error);
-  });
+        request.onerror = () => reject(request.error);
+      });
+    } catch (error) {
+      console.error('Error searching in IndexedDB:', error);
+    }
+  }
+
+  // Combine local and indexedDB results
+  let localAndIndexedMatches = [...localMatches];
+  for (const indexedUser of indexedDBMatches) {
+    if (!localAndIndexedMatches.some(u => u.id === indexedUser.id)) {
+      localAndIndexedMatches.push(indexedUser);
+    }
+  }
+
+  // Search on server if available
+  try {
+    const response = await fetch(`${import.meta.env.VITE_WS_SERVER_URL}/api/users/search/${normalizedQuery}`);
+    if (response.ok) {
+      const serverUsers = await response.json();
+      // Combine all results, removing duplicates
+      const allMatches = [...localAndIndexedMatches];
+      for (const serverUser of serverUsers) {
+        if (!allMatches.some(u => u.id === serverUser.id)) {
+          // Convert server user to local User type
+          const user: User = {
+            id: serverUser.id,
+            email: serverUser.email || '',
+            nickname: serverUser.nickname || serverUser.name || 'Unknown',
+            tag: serverUser.tag || '',
+            createdAt: new Date(serverUser.createdAt || Date.now()),
+            publicKey: serverUser.publicKey || '',
+            avatar: serverUser.avatar,
+            bio: serverUser.bio
+          };
+          allMatches.push(user);
+        }
+      }
+      return allMatches;
+    }
+  } catch (error) {
+    console.error('Error searching users on server:', error);
+    // Return local and IndexedDB results if server search fails
+  }
+
+  return localAndIndexedMatches;
 };
 
 // Updated function to search users by partial tag match in localStorage only

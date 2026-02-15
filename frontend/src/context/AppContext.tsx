@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Chat, Message } from '../types';
 import { getCurrentUser, setCurrentUser, getAllChats, getChat, getMessagesByChat, saveMessage, initDatabase } from '../services/storageService';
 import { generateId } from '../services/encryptionService';
+import { websocketService } from '../services/websocketService';
 
 interface AppContextType {
   currentUser: User | null;
@@ -34,6 +35,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const user = getCurrentUser();
         if (user) {
           setCurrentUserLocal(user);
+          
+          // Connect to WebSocket server and send user info
+          try {
+            await websocketService.connect();
+            websocketService.userOnline(user.id, {
+              id: user.id,
+              email: user.email,
+              nickname: user.nickname,
+              tag: user.tag,
+              avatar: user.avatar,
+              bio: user.bio,
+              createdAt: user.createdAt,
+              publicKey: user.publicKey
+            });
+          } catch (wsErr) {
+            console.error('WebSocket connection error:', wsErr);
+          }
         }
       } catch (err) {
         setError('Ошибка при инициализации приложения');
