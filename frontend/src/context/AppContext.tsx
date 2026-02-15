@@ -59,6 +59,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           // Connect to WebSocket server and send user info
           try {
             await websocketService.connect();
+            console.log('Отправляем информацию о пользователе на сервер:', {
+              id: user.id,
+              email: user.email,
+              nickname: user.nickname,
+              tag: user.tag,
+              avatar: user.avatar,
+              bio: user.bio,
+              createdAt: user.createdAt,
+              publicKey: user.publicKey
+            });
+            
             websocketService.userOnline(user.id, {
               id: user.id,
               email: user.email,

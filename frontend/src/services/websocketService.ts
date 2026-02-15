@@ -73,6 +73,12 @@ class WebSocketServiceImpl {
   }
 
   userOnline(userId: string, userInfo?: any): void {
+    console.log('Отправляем user_online событие на сервер:', { 
+      userId, 
+      userInfo,
+      timestamp: Date.now() 
+    });
+    
     this.emit('user_online', { 
       userId, 
       userInfo, // Send user info to server
