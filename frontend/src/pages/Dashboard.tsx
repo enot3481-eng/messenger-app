@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
+import { UserSearch } from '../components/UserSearch';
 import '../styles/Dashboard.css';
 
 export const Dashboard: React.FC = () => {
@@ -9,6 +10,7 @@ export const Dashboard: React.FC = () => {
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(undefined);
   const [editTag, setEditTag] = useState('');
   const [editBio, setEditBio] = useState('');
+  const [showUserSearch, setShowUserSearch] = useState(false);
 
   // filter chats by name or participant tag
   const filteredChats = useMemo(() => {
@@ -20,6 +22,12 @@ export const Dashboard: React.FC = () => {
       return title.toLowerCase().includes(q) || tags.toLowerCase().includes(q);
     });
   }, [chats, search]);
+
+  const handleUserSelect = (user: any) => {
+    // Здесь можно создать новый чат с выбранным пользователем
+    console.log('Selected user:', user);
+    setShowUserSearch(false);
+  };
 
   const openProfile = () => {
     setEditTag(currentUser?.tag || '');
@@ -67,20 +75,32 @@ export const Dashboard: React.FC = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+            <button 
+              className={`user-search-toggle ${showUserSearch ? 'active' : ''}`} 
+              onClick={() => setShowUserSearch(!showUserSearch)}
+            >
+              {showUserSearch ? '×' : '🔍'}
+            </button>
           </div>
 
-          <div className="chat-list">
-            {filteredChats.length === 0 ? (
-              <div className="empty-chats">Новых чатов нет</div>
-            ) : (
-              filteredChats.map((chat: any) => (
-                <div key={chat.id} className="chat-item" onClick={() => selectChat(chat.id)}>
-                  <div className="chat-title">{chat.groupName || chat.participantDetails?.map((p: any) => p.nickname).join(', ')}</div>
-                  <div className="chat-last">{chat.lastMessage?.content || ''}</div>
-                </div>
-              ))
-            )}
-          </div>
+          {showUserSearch ? (
+            <div className="user-search-section">
+              <UserSearch onSelectUser={handleUserSelect} />
+            </div>
+          ) : (
+            <div className="chat-list">
+              {filteredChats.length === 0 ? (
+                <div className="empty-chats">Новых чатов нет</div>
+              ) : (
+                filteredChats.map((chat: any) => (
+                  <div key={chat.id} className="chat-item" onClick={() => selectChat(chat.id)}>
+                    <div className="chat-title">{chat.groupName || chat.participantDetails?.map((p: any) => p.nickname).join(', ')}</div>
+                    <div className="chat-last">{chat.lastMessage?.content || ''}</div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </aside>
 
         <div className="dashboard-main">
