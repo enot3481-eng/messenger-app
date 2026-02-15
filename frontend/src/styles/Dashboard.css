@@ -256,9 +256,11 @@
   border-radius: 50%;
   border: none;
   background: #f0f0f0;
-  font-size: 1.2em;
   cursor: pointer;
   transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .action-btn:hover {

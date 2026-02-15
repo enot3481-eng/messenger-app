@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Message } from '../types';
+import { Icon } from './Icon';
 import '../styles/ChatWindow.css';
 
 interface ChatWindowProps {
@@ -77,7 +78,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chatId }) => {
           onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
           style={{ display: 'none' }}
         />
-        <label htmlFor="file-input" className="file-btn attachment-btn">📎</label>
+        <label htmlFor="file-input" className="file-btn attachment-btn">
+          <Icon name="clip" size={24} />
+        </label>
 
         <div className="input-container">
           <input
@@ -96,11 +99,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chatId }) => {
             onMouseUp={() => setTimeout(() => setShowVoiceButton(false), 1000)}
             onMouseLeave={() => setTimeout(() => setShowVoiceButton(false), 1000)}
           >
-            🎤
+            <Icon name="micro" size={20} />
           </button>
         </div>
 
-        <button type="submit" className="send-btn">➤</button>
+        <button type="submit" className="send-btn">
+          <Icon name="send" size={20} />
+        </button>
       </form>
 
       {showVoiceButton && (

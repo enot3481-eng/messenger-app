@@ -4,6 +4,7 @@ import { User, Chat } from '../types';
 import { getUserByTag, searchUsersByTag, saveUser, saveChat } from '../services/storageService';
 import { generateId } from '../services/encryptionService';
 import { ChatWindow } from '../components/ChatWindow';
+import { Icon } from '../components/Icon';
 import '../styles/Dashboard.css';
 
 export const Dashboard: React.FC = () => {
@@ -226,9 +227,10 @@ export const Dashboard: React.FC = () => {
               <div className="user-avatar-large">
                 {selectedUser.avatar ? (
                   <img src={selectedUser.avatar} alt={selectedUser.nickname} />
-                ) : (
-                  <div className="avatar-placeholder-large">{selectedUser.nickname?.charAt(0).toUpperCase()}</div>
-                )}
+                ) : null}
+                <div className="avatar-placeholder-large" style={selectedUser.avatar ? { display: 'none' } : { display: 'flex' }}>
+                  {selectedUser.nickname?.charAt(0).toUpperCase()}
+                </div>
               </div>
               
               <h2>{selectedUser.nickname}</h2>
@@ -239,9 +241,15 @@ export const Dashboard: React.FC = () => {
                   setShowUserProfile(false);
                   // Open chat with selected user
                   openChatWithUser(selectedUser);
-                }}>💬</button>
-                <button className="action-btn call-btn">📞</button>
-                <button className="action-btn video-call-btn">📹</button>
+                }}>
+                  <Icon name="chat" size={24} />
+                </button>
+                <button className="action-btn call-btn">
+                  <Icon name="call" size={24} />
+                </button>
+                <button className="action-btn video-call-btn">
+                  <Icon name="video" size={24} />
+                </button>
               </div>
               
               <div className="user-profile-details">
