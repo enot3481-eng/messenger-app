@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { User } from '../types';
-import { getUserByTag, searchUsersByTag } from '../services/storageService';
+import { getUserByTag, searchUsersByTag, saveUser } from '../services/storageService';
 import '../styles/Dashboard.css';
 
 export const Dashboard: React.FC = () => {
@@ -76,10 +76,18 @@ export const Dashboard: React.FC = () => {
     setAvatarPreview(data);
   };
 
-  const saveProfile = () => {
+  const saveProfile = async () => {
     if (!currentUser) return;
     const updated = { ...currentUser, avatar: avatarPreview, tag: editTag, bio: editBio };
     setCurrentUserData(updated);
+    
+    // Also save to storage to ensure persistence
+    try {
+      await saveUser(updated);
+    } catch (error) {
+      console.error('Error saving user profile:', error);
+    }
+    
     setShowProfile(false);
   };
 

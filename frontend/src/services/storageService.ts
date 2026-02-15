@@ -51,14 +51,14 @@ export const initDatabase = (): Promise<IDBDatabase> => {
 export const saveUser = async (user: User): Promise<void> => {
   // Save to localStorage for cross-port persistence
   saveUserLocal(user);
-  
+
   // Also save to IndexedDB for local app performance
   if (!db) throw new Error('База данных не инициализирована');
-  
+
   const tx = db.transaction('users', 'readwrite');
   const store = tx.objectStore('users');
   store.put(user);
-  
+
   return new Promise((resolve, reject) => {
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
@@ -428,6 +428,12 @@ export const saveUserLocal = (user: User): void => {
     users.push(user);
   }
   setLocalData(USERS_STORAGE_KEY, users);
+  
+  // If this is the current user, update the current user data too
+  const currentUser = getCurrentUser();
+  if (currentUser && currentUser.id === user.id) {
+    setCurrentUser(user);
+  }
 };
 
 export const getUserByEmailLocal = (email: string): User | undefined => {
@@ -441,11 +447,23 @@ export const getUserByTagLocal = (tag: string): User | undefined => {
 };
 
 export const getCurrentUser = (): User | null => {
+  // Try to get from localStorage first
+  const stored = localStorage.getItem('currentUser');
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      console.error('Error parsing currentUser from localStorage:', e);
+    }
+  }
+  // Fallback to getLocalData
   return getLocalData('currentUser');
 };
 
 export const setCurrentUser = (user: User): void => {
   setLocalData('currentUser', user);
+  // Also save to localStorage for cross-session persistence
+  localStorage.setItem('currentUser', JSON.stringify(user));
 };
 
 export const clearAllData = async (): Promise<void> => {

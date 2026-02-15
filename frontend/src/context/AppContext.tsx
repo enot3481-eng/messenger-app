@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Chat, Message } from '../types';
-import { getCurrentUser, setCurrentUser, getAllChats, getChat, getMessagesByChat, saveMessage, initDatabase } from '../services/storageService';
+import { getCurrentUser, setCurrentUser, getAllChats, getChat, getMessagesByChat, saveMessage, initDatabase, saveUser } from '../services/storageService';
 import { generateId } from '../services/encryptionService';
 import { websocketService } from '../services/websocketService';
 
@@ -71,6 +71,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const setCurrentUserData = (user: User) => {
     setCurrentUserLocal(user);
     setCurrentUser(user);
+    
+    // Also save to storage to ensure persistence
+    saveUser(user).catch(err => console.error('Error saving user:', err));
   };
 
   const loadChats = async () => {

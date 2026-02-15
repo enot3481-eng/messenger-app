@@ -1,7 +1,8 @@
 import express from 'express';
-import { WebSocketServer } from 'ws';
+import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
 import cors from 'cors';
+import { IncomingMessage } from 'http';
 
 const app = express();
 app.use(cors());
@@ -15,12 +16,14 @@ const connections = new Map();
 const userStatus = new Map();
 const users = new Map(); // Store user info by userId
 
-wss.on('connection', (ws) => {
+wss.on('connection', (ws: WebSocket) => {
   let userId = '';
 
   ws.on('message', (data) => {
     try {
-      const message = JSON.parse(data);
+      // Convert data to string
+      const dataString = data.toString();
+      const message = JSON.parse(dataString);
 
       if (message.type === 'user_online') {
         userId = message.senderId;
