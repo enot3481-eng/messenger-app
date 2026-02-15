@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Message } from '../types';
 import '../styles/ChatWindow.css';
@@ -8,11 +8,21 @@ interface ChatWindowProps {
 }
 
 export const ChatWindow: React.FC<ChatWindowProps> = ({ chatId }) => {
-  const { selectedChat, messages, sendMessage, currentUser } = useApp();
+  const { selectedChat, messages, sendMessage, currentUser, loadMessages } = useApp();
   const [messageText, setMessageText] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showVoiceButton, setShowVoiceButton] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,14 +55,17 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ chatId }) => {
             <div className="welcome-bubble">Добро пожаловать в чат! 👋</div>
           </div>
         ) : (
-          messages.map((msg) => (
-            <div key={msg.id} className={`message ${msg.senderId === currentUser?.id ? 'sent' : 'received'}`}>
-              <div className="message-content">{msg.content}</div>
-              <div className="message-time">
-                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          <>
+            {messages.map((msg) => (
+              <div key={msg.id} className={`message ${msg.senderId === currentUser?.id ? 'sent' : 'received'}`}>
+                <div className="message-content">{msg.content}</div>
+                <div className="message-time">
+                  {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
               </div>
-            </div>
-          ))
+            ))}
+            <div ref={messagesEndRef} />
+          </>
         )}
       </div>
 

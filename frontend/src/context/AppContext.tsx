@@ -55,7 +55,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         
         if (user) {
           setCurrentUserLocal(user);
-          
+
           // Connect to WebSocket server and send user info
           try {
             await websocketService.connect();
@@ -68,6 +68,41 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               bio: user.bio,
               createdAt: user.createdAt,
               publicKey: user.publicKey
+            });
+            
+            // Listen for incoming messages
+            websocketService.on('message', async (data: any) => {
+              try {
+                const messageData = JSON.parse(typeof data === 'string' ? data : JSON.stringify(data));
+                
+                // Check if this is a chat message
+                if (messageData.type === 'message' && messageData.content) {
+                  const newMessage: Message = {
+                    id: generateId(),
+                    chatId: messageData.chatId || 'default',
+                    senderId: messageData.senderId,
+                    senderName: messageData.senderName,
+                    content: messageData.content,
+                    type: messageData.type || 'text',
+                    timestamp: new Date(messageData.timestamp || Date.now()),
+                    isRead: false,
+                    isEncrypted: messageData.isEncrypted || false
+                  };
+                  
+                  // Save the received message
+                  await saveMessage(newMessage);
+                  
+                  // If this message is for the currently selected chat, reload messages
+                  if (selectedChat?.id === newMessage.chatId) {
+                    await loadMessages(newMessage.chatId);
+                  }
+                  
+                  // Reload chats to update last message
+                  await loadChats();
+                }
+              } catch (error) {
+                console.error('Error processing incoming message:', error);
+              }
             });
           } catch (wsErr) {
             console.error('WebSocket connection error:', wsErr);
@@ -171,6 +206,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await saveMessage(message);
       await loadMessages(chatId);
       await loadChats();
+      
+      // Send message via WebSocket to other participants
+      try {
+        const chat = chats.find(c => c.id === chatId);
+        if (chat) {
+          // Send to all participants except current user
+          for (const participantId of chat.participantIds) {
+            if (participantId !== currentUser.id) {
+              websocketService.sendMessage({
+                type: 'message',
+                chatId,
+                senderId: currentUser.id,
+                senderName: currentUser.nickname,
+                receiverId: participantId,
+                content: message.content,
+                timestamp: Date.now()
+              });
+            }
+          }
+        }
+      } catch (wsErr) {
+        console.error('Error sending message via WebSocket:', wsErr);
+      }
     } catch (err) {
       setError('Ошибка при отправке сообщения');
       console.error(err);

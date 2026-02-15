@@ -139,7 +139,10 @@
 .chat-title { font-weight: 600; color: #222; }
 .chat-last { font-size: 12px; color: #888; }
 
-.dashboard-main { flex: 1; display: flex; align-items: center; justify-content: center; }
+.dashboard-main { 
+  flex: 1; 
+  display: flex; 
+}
 
 .no-chat-selected {
   flex: 1;

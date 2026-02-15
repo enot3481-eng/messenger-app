@@ -6,6 +6,8 @@ export interface WebSocketMessage {
   receiverId?: string;
   content?: any;
   timestamp: number;
+  chatId?: string;
+  senderName?: string;
 }
 
 class WebSocketServiceImpl {
