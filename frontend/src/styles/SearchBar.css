@@ -1,0 +1,35 @@
+.search-bar {
+  display: flex;
+  gap: 5px;
+  margin: 10px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  outline: none;
+  font-size: 14px;
+}
+
+.search-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+.search-clear {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s;
+}
+
+.search-clear:hover {
+  border-color: #dc3545;
+  color: #dc3545;
+}

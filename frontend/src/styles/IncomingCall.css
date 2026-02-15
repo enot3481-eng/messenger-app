@@ -1,0 +1,77 @@
+.incoming-call {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.incoming-call-content {
+  background: white;
+  border-radius: 15px;
+  padding: 40px;
+  text-align: center;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.incoming-call-content h2 {
+  margin: 0 0 10px;
+  font-size: 24px;
+}
+
+.incoming-call-content p {
+  margin: 0 0 30px;
+  font-size: 18px;
+  color: #666;
+}
+
+.call-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.answer-btn,
+.reject-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: none;
+  font-size: 30px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.answer-btn {
+  background: #28a745;
+  color: white;
+}
+
+.answer-btn:hover {
+  transform: scale(1.1);
+}
+
+.reject-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.reject-btn:hover {
+  transform: scale(1.1);
+}

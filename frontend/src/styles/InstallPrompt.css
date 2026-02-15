@@ -1,0 +1,73 @@
+.install-prompt {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 500;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.install-content {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 15px;
+  width: 300px;
+}
+
+.install-content h3 {
+  margin: 0 0 5px;
+  font-size: 14px;
+}
+
+.install-content p {
+  margin: 0 0 15px;
+  font-size: 12px;
+  color: #666;
+}
+
+.install-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.install-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.install-btn:hover {
+  background: #0056b3;
+}
+
+.install-close {
+  flex: 1;
+  padding: 8px 12px;
+  background: #f0f0f0;
+  color: #666;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.install-close:hover {
+  background: #e0e0e0;
+}
