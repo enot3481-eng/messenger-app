@@ -103,10 +103,7 @@ export const searchUsersByTag = async (tagQuery: string): Promise<User[]> => {
   const normalizedQuery = tagQuery.toLowerCase();
   
   // Search in localStorage first
-  const localUsers = getAllUsersLocal();
-  const localMatches = localUsers.filter(user => 
-    user.tag.toLowerCase().includes(normalizedQuery)
-  );
+  const localMatches = searchUsersByTagLocal(normalizedQuery);
 
   // Search in IndexedDB
   if (!db) throw new Error('База данных не инициализирована');
@@ -140,6 +137,15 @@ export const searchUsersByTag = async (tagQuery: string): Promise<User[]> => {
 
     request.onerror = () => reject(request.error);
   });
+};
+
+// Updated function to search users by partial tag match in localStorage only
+export const searchUsersByTagLocal = (tagQuery: string): User[] => {
+  const normalizedQuery = tagQuery.toLowerCase();
+  const localUsers = getAllUsersLocal();
+  return localUsers.filter(user => 
+    user.tag.toLowerCase().includes(normalizedQuery)
+  );
 };
 
 export const getUserByEmail = async (email: string): Promise<User | undefined> => {
